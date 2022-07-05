@@ -22,13 +22,13 @@ namespace WebApplication3.Controllers
             if (usuarios.DataCriacao.Year < 1900)
                 return BadRequest("Data de criação nao pode ser menor que 1900");
 
-            if(string.IsNullOrEmpty(usuarios.Nome))
+            if (string.IsNullOrEmpty(usuarios.Nome))
                 return BadRequest("Nome nao pode ser nulo");
 
             if (string.IsNullOrEmpty(usuarios.CPF))
                 return BadRequest("CPF nao pode ser nulo");
 
-           bool Usuario =  VerificarUsuarioExistente(options, usuarios.CPF, usuarios.Email);
+            bool Usuario = VerificarUsuarioExistente(options, usuarios.CPF, usuarios.Email);
 
             if (Usuario == true)
             {
@@ -126,11 +126,11 @@ namespace WebApplication3.Controllers
 
                 command.Parameters.Add(new SqlParameter("Id", idUsuario));
 
-                using (SqlDataReader dr = command.ExecuteReader()) 
+                using (SqlDataReader dr = command.ExecuteReader())
                 {
-                    while (dr.Read()) 
-                    {   
-                       usuario = new Usuario()
+                    while (dr.Read())
+                    {
+                        usuario = new Usuario()
                         {
                             CPF = dr.GetString(1),
                             DataCriacao = dr.GetDateTime(5),
