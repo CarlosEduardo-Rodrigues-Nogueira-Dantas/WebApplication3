@@ -3,8 +3,8 @@
     public class Album
     {
         public string NomeAlbum { get; set; }
-        public DateTime DataCriacaoAlbum { get; set; }
-        public DateTime DataLancamentoAlbum { get; set; }
-
+        public DateTime DataCriacao { get; set; }
+        public DateTime DataLancamento { get; set; }
+        public int IdArtista { get; set; }
     }
 }
