@@ -16,16 +16,24 @@ namespace WebApplication3.Controllers
 
         public IActionResult CreatePlaylist([FromServices] IOptions<ConnectionStringOptions> options, [FromBody] Playlists playlists)
         {
+
+            bool playListExistente = VerificarPlaylistExistente(options,playlists.Nome);
+
+            if(playListExistente == true) 
+            {
+                return BadRequest("Uma playlist não pode ter o nome de outra playlist existente para um mesmo usuário.");
+            }
+                
             using (SqlConnection connection = new SqlConnection(options.Value.MyConnection))
             {
                 connection.Open();
 
                 SqlCommand command = new();
                 command.Connection = connection;
-                command.CommandText = @"insert into Usuario (NomeMusic,DataCriacao) values (@NomeMusic,@DataCriacao)";
+                command.CommandText = @"insert into Usuario (Nome,DataCriacao) values (@Nome,@DataCriacao)";
                 command.CommandType = System.Data.CommandType.Text;
 
-                command.Parameters.Add(new SqlParameter("NomeMusic", playlists.NomeMusic));
+                command.Parameters.Add(new SqlParameter("Nome", playlists.Nome));
                 command.Parameters.Add(new SqlParameter("DataCriacao", playlists.DataCriacao));
 
                 command.ExecuteNonQuery();
@@ -50,7 +58,7 @@ namespace WebApplication3.Controllers
                 command.CommandText = @"insert into Usuario (NomeMusic,DataCriacao) values (@NomeMusic,@DataCriacao)";
                 command.CommandType = System.Data.CommandType.Text;
 
-                command.Parameters.Add(new SqlParameter("NomeMusic", playlists.NomeMusic));
+                command.Parameters.Add(new SqlParameter("NomeMusic", playlists.Nome));
                 command.Parameters.Add(new SqlParameter("DataCriacao", playlists.DataCriacao));
 
                 command.ExecuteNonQuery();
@@ -74,7 +82,7 @@ namespace WebApplication3.Controllers
                 command.CommandText = @"delete from playlists where Id = @Id ";
                 command.CommandType = System.Data.CommandType.Text;
 
-                command.Parameters.Add(new SqlParameter("NomeMusic", playlists.NomeMusic));
+                command.Parameters.Add(new SqlParameter("NomeMusic", playlists.Nome));
                 command.Parameters.Add(new SqlParameter("DataCriacao", playlists.DataCriacao));
 
                 command.ExecuteNonQuery();
@@ -108,12 +116,32 @@ namespace WebApplication3.Controllers
                         playlists = new Playlists()
                         {
                             DataCriacao = dr.GetDateTime(4),
-                            NomeMusic = dr.GetString(0)
+                            Nome = dr.GetString(0)
                         };
                     }
                 }
 
                 return Ok(playlists);
+            }
+        }
+
+        private bool VerificarPlaylistExistente(IOptions<ConnectionStringOptions>options, string nomePlayList) 
+        {
+
+            using (SqlConnection connection = new SqlConnection(options.Value.MyConnection)) 
+            {
+                connection.Open();
+                SqlCommand command = new();
+                command.Connection = connection;
+                command.CommandType = System.Data.CommandType.Text;
+                command.CommandText = @"select Nome from Playlist where IdUsuario = @IdUsuario";
+
+                command.Parameters.Add(new SqlParameter("Nome", nomePlayList));
+
+                int? id = (int?)command.ExecuteScalar();
+
+                return id != null;
+
             }
         }
 

@@ -16,7 +16,8 @@ namespace WebApplication3.Controllers
         [Route("")]
         public IActionResult CreateMusica([FromServices] IOptions<ConnectionStringOptions> options, [FromQuery] Musicas musicas)
         {
-            //if(musicas.TempDuracao < 0)
+            if (musicas.TempDuracao.TotalSeconds <= 0)
+                return BadRequest("O tempo de uma música deve ser maior que 0 segundoss");
 
             using (SqlConnection connection = new SqlConnection(options.Value.MyConnection))
             {

@@ -58,7 +58,7 @@
                     d1 = 0;
 
                 //Verificar se o primeiro número bateu na posição 9(penultima)
-                if (d1 != Convert.ToInt32(CPF.Substring(, 1)))
+                if (d1 != Convert.ToInt32(CPF.Substring(j, 1)))
                     cpfValido = false;
 
 

@@ -27,7 +27,7 @@ namespace WebApplication3.Controllers
 
                 SqlCommand command = new();
                 command.Connection = connection;
-                command.CommandText = @"insert into Usuario (CPF,Nome,Email,DataNasc,DataCriacao) values (@CPF,@Nome,@Email,@DataNasc,@DataCriacao)";
+                command.CommandText = @"insert into Artista (CPF,Nome,Email,DataNasc,DataCriacao) values (@CPF,@Nome,@Email,@DataNasc,@DataCriacao)";
                 command.CommandType = System.Data.CommandType.Text;
 
                 command.Parameters.Add(new SqlParameter("CPF", artista.CPF));
@@ -39,7 +39,7 @@ namespace WebApplication3.Controllers
                 command.ExecuteNonQuery();
             }
 
-            return Ok();
+            return Ok("Artista foi criado");
         }
 
 
