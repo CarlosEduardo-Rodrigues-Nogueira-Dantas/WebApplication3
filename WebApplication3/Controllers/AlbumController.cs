@@ -14,12 +14,15 @@ namespace WebApplication3.Controllers
 
         [HttpPost]
         [Route("")]
+        //[FromServices] = sobrescreva a fonte de associação injetando os valores via injeção de dependência em um método Action específico.
         public IActionResult PostAlbum([FromServices] IOptions<ConnectionStringOptions> options, [FromBody] Album album)
         {
-
+            //Este metodo, cria um album  nome
             bool albumExistente = VerificarAlbumExistente(options, album.NomeAlbum);
 
-            if(albumExistente == true) 
+            //verificar se ja nao existe um album com o mesmo 
+
+            if (albumExistente == true) 
             {
                 return BadRequest("Não podem haver albuns com nomes repetidos para um mesmo artista.");
             }
@@ -44,7 +47,7 @@ namespace WebApplication3.Controllers
 
             return Ok();
         }
-
+        //Este metodo atualiza um album
         [HttpPut]
         [Route("{idAlbum}")]
         public IActionResult UpdateAlbum([FromServices] IOptions<ConnectionStringOptions> options, [FromBody] Album album, [FromRoute] int idAlbum)
@@ -55,11 +58,11 @@ namespace WebApplication3.Controllers
 
                 SqlCommand command = new();
                 command.Connection = connection;
-                command.CommandText = @"UPDATE Usuario SET Nome = @Nome,DataCriacaoAlbum = @DataCriacaoAlbum,DataLancamentoAlbum = @DataLancamentoAlbum where Id = @Id";
+                command.CommandText = @"UPDATE Album SET Nome = @Nome,DataCriacao = @DataCriacao,DataLancamento = @DataLancamento where Id = @Id";
 
                 command.Parameters.Add(new SqlParameter("Nome", album.NomeAlbum));
-                command.Parameters.Add(new SqlParameter("DataCriacaoAlbum", album.DataCriacao));
-                command.Parameters.Add(new SqlParameter("DataLancamentoAlbum", album.DataLancamento));
+                command.Parameters.Add(new SqlParameter("DataCriacao", album.DataCriacao));
+                command.Parameters.Add(new SqlParameter("DataLancamento", album.DataLancamento));
 
                 command.Parameters.Add(new SqlParameter("Id", idAlbum));
 
@@ -69,7 +72,7 @@ namespace WebApplication3.Controllers
 
             return Ok();
         }
-
+        //Este metodo deleta um album
         [HttpDelete]
         [Route("{idAlbum}")]
         public IActionResult DeleteAlbum([FromServices] IOptions<ConnectionStringOptions> options, [FromRoute] int idAlbum)
@@ -88,6 +91,7 @@ namespace WebApplication3.Controllers
             return Ok();
         }
 
+        //Este metodo Get um album e volta todos os dados do album
         [HttpGet]
         [Route("{idAlbum}")]
         public IActionResult GetAlbum([FromServices] IOptions<ConnectionStringOptions> options, [FromQuery] int idAlbum)
@@ -121,7 +125,7 @@ namespace WebApplication3.Controllers
             }
         }
 
-
+        //Metodo que verifica um album existente
         private bool VerificarAlbumExistente(IOptions<ConnectionStringOptions> options, string nomeAlbum)
         {
             using (SqlConnection connection = new SqlConnection(options.Value.MyConnection))
@@ -146,3 +150,4 @@ namespace WebApplication3.Controllers
         }
     }
 }
+    

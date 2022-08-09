@@ -2,7 +2,6 @@
 {
     public class ValidarCPF
     {
-        public string Numero { get; set; }
         public static bool Validar(string CPF)
         {
             bool cpfValido = true;

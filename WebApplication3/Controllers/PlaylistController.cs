@@ -7,7 +7,7 @@ using WebApplication3.Options;
 
 namespace WebApplication3.Controllers
 {
-    [Route("api/")]
+    [Route("api/playlists")]
     [ApiController]
     public class PlaylistController : ControllerBase
     {
@@ -17,24 +17,27 @@ namespace WebApplication3.Controllers
         public IActionResult CreatePlaylist([FromServices] IOptions<ConnectionStringOptions> options, [FromBody] Playlists playlists)
         {
 
-            bool playListExistente = VerificarPlaylistExistente(options,playlists.Nome);
+            bool playListExistente = VerificarPlaylistExistente(options,playlists.IdUsuario);
 
             if(playListExistente == true) 
             {
                 return BadRequest("Uma playlist não pode ter o nome de outra playlist existente para um mesmo usuário.");
             }
-                
+
+           
+
             using (SqlConnection connection = new SqlConnection(options.Value.MyConnection))
             {
                 connection.Open();
 
                 SqlCommand command = new();
                 command.Connection = connection;
-                command.CommandText = @"insert into Usuario (Nome,DataCriacao) values (@Nome,@DataCriacao)";
+                command.CommandText = @"insert into Playlist (Nome,DataCriacao,IdUsuario) values (@Nome,@DataCriacao,@IdUsuario)";
                 command.CommandType = System.Data.CommandType.Text;
 
                 command.Parameters.Add(new SqlParameter("Nome", playlists.Nome));
                 command.Parameters.Add(new SqlParameter("DataCriacao", playlists.DataCriacao));
+                command.Parameters.Add(new SqlParameter("IdUsuario", playlists.IdUsuario));
 
                 command.ExecuteNonQuery();
 
@@ -45,9 +48,9 @@ namespace WebApplication3.Controllers
 
 
         [HttpPut]
-        [Route("")]
+        [Route("{idPlayList}")]
 
-        public IActionResult UpdatePlaylist([FromServices] IOptions<ConnectionStringOptions> options, [FromBody] Playlists playlists)
+        public IActionResult UpdatePlaylist([FromServices] IOptions<ConnectionStringOptions> options, [FromBody] Playlists playlists, [FromRoute] int idPlayList)
         {
             using (SqlConnection connection = new SqlConnection(options.Value.MyConnection))
             {
@@ -55,11 +58,12 @@ namespace WebApplication3.Controllers
 
                 SqlCommand command = new();
                 command.Connection = connection;
-                command.CommandText = @"insert into Usuario (NomeMusic,DataCriacao) values (@NomeMusic,@DataCriacao)";
+                command.CommandText = @"UPDATE Playlist set NomeMusic = @NomeMusic, DataCriacao = @DataCriacao where Id = @Id";
                 command.CommandType = System.Data.CommandType.Text;
 
                 command.Parameters.Add(new SqlParameter("NomeMusic", playlists.Nome));
                 command.Parameters.Add(new SqlParameter("DataCriacao", playlists.DataCriacao));
+                command.Parameters.Add(new SqlParameter("Id", idPlayList));
 
                 command.ExecuteNonQuery();
 
@@ -69,9 +73,9 @@ namespace WebApplication3.Controllers
         }
 
         [HttpDelete]
-        [Route("{IdPlayList}")]
+        [Route("{idPlayList}")]
 
-        public IActionResult DeletePlaylist([FromServices] IOptions<ConnectionStringOptions> options, [FromBody] Playlists playlists, [FromRoute] int PlayList)
+        public IActionResult DeletePlaylist([FromServices] IOptions<ConnectionStringOptions> options, [FromRoute] int idPlayList)
         {
             using (SqlConnection connection = new SqlConnection(options.Value.MyConnection))
             {
@@ -79,11 +83,10 @@ namespace WebApplication3.Controllers
 
                 SqlCommand command = new();
                 command.Connection = connection;
-                command.CommandText = @"delete from playlists where Id = @Id ";
+                command.CommandText = @"delete from Playlist where Id = @Id ";
                 command.CommandType = System.Data.CommandType.Text;
 
-                command.Parameters.Add(new SqlParameter("NomeMusic", playlists.Nome));
-                command.Parameters.Add(new SqlParameter("DataCriacao", playlists.DataCriacao));
+                command.Parameters.Add(new SqlParameter("id", idPlayList));
 
                 command.ExecuteNonQuery();
 
@@ -104,7 +107,7 @@ namespace WebApplication3.Controllers
 
                 SqlCommand command = new();
                 command.Connection = connection;
-                command.CommandText = @"select * from PlayList where Id = @Id";
+                command.CommandText = @"select * from Playlist where Id = @Id";
                 command.CommandType = System.Data.CommandType.Text;
 
                 command.Parameters.Add(new SqlParameter("Id", idPlayList));
@@ -116,7 +119,8 @@ namespace WebApplication3.Controllers
                         playlists = new Playlists()
                         {
                             DataCriacao = dr.GetDateTime(4),
-                            Nome = dr.GetString(0)
+                            Nome = dr.GetString(0),
+                            
                         };
                     }
                 }
@@ -125,18 +129,19 @@ namespace WebApplication3.Controllers
             }
         }
 
-        private bool VerificarPlaylistExistente(IOptions<ConnectionStringOptions>options, string nomePlayList) 
+        private bool VerificarPlaylistExistente(IOptions<ConnectionStringOptions>options,int idUsuario) 
         {
+            Playlists playlists = new(); 
 
             using (SqlConnection connection = new SqlConnection(options.Value.MyConnection)) 
             {
                 connection.Open();
                 SqlCommand command = new();
                 command.Connection = connection;
-                command.CommandType = System.Data.CommandType.Text;
-                command.CommandText = @"select Nome from Playlist where IdUsuario = @IdUsuario";
+                command.CommandType = System.Data.CommandType.Text; 
+                command.CommandText = @"select NomeMusic from Playlist where IdUsuario = @IdUsuario";
 
-                command.Parameters.Add(new SqlParameter("Nome", nomePlayList));
+                command.Parameters.Add(new SqlParameter("IdUsuario", idUsuario));
 
                 int? id = (int?)command.ExecuteScalar();
 

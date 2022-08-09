@@ -14,10 +14,24 @@ namespace WebApplication3.Controllers
 
         [HttpPost]
         [Route("")]
-        public IActionResult CreateMusica([FromServices] IOptions<ConnectionStringOptions> options, [FromQuery] Musicas musicas)
+        public IActionResult CreateMusica([FromServices] IOptions<ConnectionStringOptions> options, [FromBody] Musicas musicas)
         {
             if (musicas.TempDuracao.TotalSeconds <= 0)
                 return BadRequest("O tempo de uma música deve ser maior que 0 segundoss");
+
+            bool musicaExistente = VerificarMusicaExistente(options, musicas.NomeMusica);
+
+            if (musicaExistente == true)
+            {
+                return BadRequest("Não podem haver músicas com nomes iguais para um mesmo artista"); 
+            }
+
+            bool musicaAlbumExistente = VerificarAlbumExistente(options,musicas.NomeMusica);
+
+            if(musicaAlbumExistente == true) 
+            {
+                return BadRequest("Não podem haver músicas com nomes iguais para um mesmo album.");
+            }
 
             using (SqlConnection connection = new SqlConnection(options.Value.MyConnection))
             {
@@ -25,12 +39,14 @@ namespace WebApplication3.Controllers
 
                 SqlCommand command = new();
                 command.Connection = connection;
-                command.CommandText = @"insert into Musica (NomeMusica,TempDuracao,DataLancamento) values (@NomeMusica,@TempDuracao,@DataLancamento)";
+                command.CommandText = @"insert into Musica (Nome,TempoDuracao,DataLancamento,IdArtista,IdAlbum) values (@Nome,@TempoDuracao,@DataLancamento,@IdArtista,@IdAlbum)";
                 command.CommandType = System.Data.CommandType.Text;
 
-                command.Parameters.Add(new SqlParameter("NomeMusica", musicas.NomeMusica));
-                command.Parameters.Add(new SqlParameter("TempDuracao", musicas.TempDuracao));
+                command.Parameters.Add(new SqlParameter("Nome", musicas.NomeMusica));
+                command.Parameters.Add(new SqlParameter("TempoDuracao", musicas.TempDuracao));
                 command.Parameters.Add(new SqlParameter("DataLancamento", musicas.DataLancamento));
+                command.Parameters.Add(new SqlParameter("IdArtista", musicas.IdArtista));
+                command.Parameters.Add(new SqlParameter("IdAlbum", musicas.IdAlbum));   
 
                 command.ExecuteNonQuery();
 
@@ -120,5 +136,51 @@ namespace WebApplication3.Controllers
                 return Ok(musicas);
             }
         }
+
+        private bool VerificarMusicaExistente(IOptions<ConnectionStringOptions> options, string nomeMusica) 
+        {
+            using (SqlConnection connection = new SqlConnection(options.Value.MyConnection)) 
+            {
+                connection.Open();
+
+                Musicas musicas = new();
+
+                SqlCommand command = new();
+                command.Connection = connection;
+                command.CommandText = @"select IdArtista from Musica where Nome = @Nome";
+                command.CommandType = System.Data.CommandType.Text;
+
+                command.Parameters.Add(new SqlParameter("Nome", nomeMusica));
+
+                int? id = (int?)command.ExecuteScalar();
+
+
+                return id != null;
+            }
+        }
+
+
+        private bool VerificarAlbumExistente(IOptions<ConnectionStringOptions> options, string nomeMusica)
+        {
+            using (SqlConnection connection = new SqlConnection(options.Value.MyConnection))
+            {
+                connection.Open();
+
+                Musicas musicas = new();
+
+                SqlCommand command = new();
+                command.Connection = connection;
+                command.CommandText = @"select IdAlbum from Musica where Nome = @Nome";
+                command.CommandType = System.Data.CommandType.Text;
+
+                command.Parameters.Add(new SqlParameter("Nome", nomeMusica));
+
+                int? id = (int?)command.ExecuteScalar();
+
+
+                return id != null;
+            }
+        }
+
     }
 }
